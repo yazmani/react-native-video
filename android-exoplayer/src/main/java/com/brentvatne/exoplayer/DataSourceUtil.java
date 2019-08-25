@@ -25,6 +25,7 @@ public class DataSourceUtil {
     private DataSourceUtil() {
     }
 
+    private static final String USER_AGENT_HEADER = "User-Agent";
     private static DataSource.Factory rawDataSourceFactory = null;
     private static DataSource.Factory defaultDataSourceFactory = null;
     private static String userAgent = null;
@@ -33,10 +34,11 @@ public class DataSourceUtil {
         DataSourceUtil.userAgent = userAgent;
     }
 
-    public static String getUserAgent(ReactContext context) {
-        if (userAgent == null) {
-            userAgent = Util.getUserAgent(context, "ReactNativeVideo");
-        }
+    public static String getUserAgent(ReactContext context, Map<String, String> requestHeaders) {
+        userAgent = requestHeaders != null && requestHeaders.containsKey(USER_AGENT_HEADER)
+                ? requestHeaders.get(USER_AGENT_HEADER)
+                : Util.getUserAgent(context, "ReactNativeVideo");
+
         return userAgent;
     }
 
@@ -77,7 +79,7 @@ public class DataSourceUtil {
         CookieJarContainer container = (CookieJarContainer) client.cookieJar();
         ForwardingCookieHandler handler = new ForwardingCookieHandler(context);
         container.setCookieJar(new JavaNetCookieJar(handler));
-        OkHttpDataSourceFactory okHttpDataSourceFactory = new OkHttpDataSourceFactory(client, getUserAgent(context), bandwidthMeter);
+        OkHttpDataSourceFactory okHttpDataSourceFactory = new OkHttpDataSourceFactory(client, getUserAgent(context, requestHeaders), bandwidthMeter);
 
         if (requestHeaders != null)
             okHttpDataSourceFactory.getDefaultRequestProperties().set(requestHeaders);
